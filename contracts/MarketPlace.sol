@@ -17,4 +17,11 @@ contract MarketPlace {
         uint offerId;
         Status status;
     }
+
+    mapping (uint => Trade) public trades;
+    mapping (uint => Offer) public offers;
+    mapping(address => uint) public balances;
+    mapping(address => uint) public availableBalances;
+    mapping(address => bool) public members;
+    address admin;
 }

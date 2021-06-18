@@ -34,7 +34,7 @@ contract MarketPlace {
 
      modifier onlyMember(address member, bool registered) {
         if(registered) {
-            require(members[member] == true, 'must be registered');
+            require(members[member] == true, 'Member must be registered');
         } else {
             require(members[member] == false, 'must NOT be registered');
         }
@@ -49,12 +49,6 @@ contract MarketPlace {
     constructor() public {
         admin = msg.sender;
     }
-
-    function sell(string calldata description, uint price) external onlyMember(msg.sender, true) {
-        require(price > 0, 'cannot sell free items');
-        uint offerId = offerID++;
-        offers[offerId] = Offer(offerId, msg.sender, description, price, Status.PENDING);
-    }
     
     function buy(uint offerId) external onlyMember(msg.sender, true) {
         Offer storage offer = offers[offerId];
@@ -66,6 +60,13 @@ contract MarketPlace {
         uint tradeId = tradeID++;
         trades[tradeID++] = Trade(tradeId, offer.id, msg.sender, offer.seller, offer.price, Status.PENDING);
     }
+
+    function sell(string calldata description, uint price) external onlyMember(msg.sender, true) {
+        require(price > 0, 'cannot sell free items');
+        uint offerId = offerID++;
+        offers[offerId] = Offer(offerId, msg.sender, description, price, Status.PENDING);
+    }
+    
         
     function deposit() external payable onlyMember(msg.sender, true) {
         balances[msg.sender] += msg.value;
@@ -102,7 +103,7 @@ contract MarketPlace {
     }
     
     //Can send ether to smart contract
-    fallback() external payable {}
+    receive() external payable {}
     
    
 }

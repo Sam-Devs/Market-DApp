@@ -1,0 +1,8 @@
+{
+  "name": "Market-DApp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Sam-Devs/Market-DApp.git",
+  "author": "Sam Ayorinde <41350405+Sam-Devs@users.noreply.github.com>",
+  "license": "MIT"
+}

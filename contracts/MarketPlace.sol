@@ -62,7 +62,7 @@ contract MarketPlace {
         require(offer.status == Status.PENDING, 'offer must be pending');
         require(availableBalances[msg.sender] >= offer.price);
         availableBalances[msg.sender] -= offer.price;
-        offer.status = Status.DONE;
+        offer.status = Status.SOLD;
         uint tradeId = tradeID++;
         trades[tradeID++] = Trade(tradeId, offer.id, msg.sender, offer.seller, offer.price, Status.PENDING);
     }
@@ -76,7 +76,7 @@ contract MarketPlace {
         Trade storage trade = trades[txId];
         require(trade.id != 0, 'trade must exist');
         require(trade.status == Status.PENDING, 'trade must be in PENDING state');
-        trade.status = Status.DONE;
+        trade.status = Status.SOLD;
         availableBalances[msg.sender] += trade.price;
         _transfer(trade.buyer, trade.seller, trade.price);
     }
@@ -102,19 +102,7 @@ contract MarketPlace {
     }
     
     //Can send ether to smart contract
-    function() external payable {}
+    fallback() external payable {}
     
-    modifier onlyMember(address member, bool registered) {
-        if(registered) {
-            require(members[member] == true, 'must be registered');
-        } else {
-            require(members[member] == false, 'must NOT be registered');
-        }
-        _;
-    }
-    
-    modifier onlyAdmin() {
-        require(msg.sender == admin, 'only admin');
-        _;
-    }
+   
 }

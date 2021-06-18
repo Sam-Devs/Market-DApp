@@ -1,6 +1,8 @@
 pragma solidity 0.6.12;
 
 contract MarketPlace {
+
+    string public name - "Online Marketplace"
     enum Status { 
         PENDING, 
         SOLD

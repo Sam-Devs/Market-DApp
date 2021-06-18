@@ -5,6 +5,7 @@ contract MarketPlace {
         PENDING, 
         SOLD
     }
+
     struct Trade {
         uint id;
         uint offerId;
@@ -13,6 +14,7 @@ contract MarketPlace {
         uint price;
         Status status;
     }
+
     struct Offer {
         uint id;
         address seller;
@@ -29,28 +31,32 @@ contract MarketPlace {
     
     uint offerID = 1;
     uint tradeID = 1;
+
+     modifier onlyMember(address member, bool registered) {
+        if(registered) {
+            require(members[member] == true, 'must be registered');
+        } else {
+            require(members[member] == false, 'must NOT be registered');
+        }
+        _;
+    }
+    
+    modifier onlyAdmin() {
+        require(msg.sender == admin, 'only admin');
+        _;
+    }
     
     constructor() public {
         admin = msg.sender;
     }
 
-    function sell(string calldata description, uint price) 
-        external 
-        onlyMember(msg.sender, true) {
+    function sell(string calldata description, uint price) external onlyMember(msg.sender, true) {
         require(price > 0, 'cannot sell free items');
         uint offerId = offerID++;
-        offers[offerId] = Offer(
-            offerId, 
-            msg.sender,
-            description, 
-            price, 
-            Status.PENDING
-        );
+        offers[offerId] = Offer(offerId, msg.sender, description, price, Status.PENDING);
     }
     
-    function buy(uint offerId)
-        external 
-        onlyMember(msg.sender, true) {
+    function buy(uint offerId) external onlyMember(msg.sender, true) {
         Offer storage offer = offers[offerId];
         require(offer.id > 0, 'offer must exist');
         require(offer.status == Status.PENDING, 'offer must be pending');
@@ -58,31 +64,15 @@ contract MarketPlace {
         availableBalances[msg.sender] -= offer.price;
         offer.status = Status.DONE;
         uint tradeId = tradeID++;
-        trades[tradeID++] = Trade(
-            tradeId, 
-            offer.id, 
-            msg.sender,
-            offer.seller, 
-            offer.price,
-            Status.PENDING
-        );
+        trades[tradeID++] = Trade(tradeId, offer.id, msg.sender, offer.seller, offer.price, Status.PENDING);
     }
         
-    function deposit() 
-        external 
-        payable 
-        onlyMember(msg.sender, true) {
+    function deposit() external payable onlyMember(msg.sender, true) {
         balances[msg.sender] += msg.value;
         availableBalances[msg.sender] += msg.value;
     }
-    
-    /*
-     * Admin functions
-     */
-    
-    function settle(uint txId) 
-        external 
-        onlyAdmin() {
+
+    function settle(uint txId) external onlyAdmin() {
         Trade storage trade = trades[txId];
         require(trade.id != 0, 'trade must exist');
         require(trade.status == Status.PENDING, 'trade must be in PENDING state');
@@ -91,19 +81,13 @@ contract MarketPlace {
         _transfer(trade.buyer, trade.seller, trade.price);
     }
     
-    function register(address member) 
-        external 
-        onlyMember(member, false)
-        onlyAdmin() {
+    function register(address member) external onlyMember(member, false) onlyAdmin() {
         members[member] = true;
         balances[member] += 500;
         availableBalances[member] += 500;
     }
     
-    function unregister(address member) 
-        external 
-        onlyMember(member, true)
-        onlyAdmin() {
+    function unregister(address member) external onlyMember(member, true) onlyAdmin() {
         uint memberBalance = balances[member];
         members[member] = false;
         _transfer(member, address(this), memberBalance);

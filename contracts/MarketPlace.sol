@@ -1,7 +1,7 @@
 pragma solidity 0.6.12;
 
 contract MarketPlace {
-    enum Status {PENDING, SOLD }
+    enum Status {PENDING, SOLD };
     struct Offer {
         uint id;
         string memory description;
@@ -32,16 +32,16 @@ contract MarketPlace {
         admin = msg.sender;
     }
 
-    modifier() {
+    modifier onlyAdmin() {
         require(msg.sender == admin, "Only Admin")
         _;
     }
 
-    modifier(bool registered, address member) {
+    modifier onlyMember(bool registered, address member) {
         if(registered) {
-            require(members[member] == true, "must be registered");
+            require(members[member] == true, "Member must be registered");
         } else {
-            require(members[member] == false, "must not be registered");
+            require(members[member] == false, "Member must not be registered");
         }
         _;
     }
@@ -64,14 +64,8 @@ contract MarketPlace {
         balances[msg.sender] += msg.value;
         availableBalances[msg.sender] += msg.value;
     }
-    
-    /*
-     * Admin functions
-     */
-    
-    function settle(uint txId) 
-        external 
-        onlyAdmin() {
+
+    function settle(uint txId) external onlyAdmin() {
         Trade storage trade = trades[txId];
         require(trade.id != 0, 'trade must exist');
         require(trade.status == Status.PENDING, 'trade must be in PENDING state');
@@ -80,10 +74,7 @@ contract MarketPlace {
         _transfer(trade.buyer, trade.seller, trade.price);
     }
     
-    function register(address member) 
-        external 
-        onlyMember(member, false)
-        onlyAdmin() {
+    function register(address member) external onlyMember(member, false) onlyAdmin() {
         members[member] = true;
         balances[member] += 500;
         availableBalances[member] += 500;
